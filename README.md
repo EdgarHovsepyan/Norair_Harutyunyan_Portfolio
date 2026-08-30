@@ -100,7 +100,10 @@ every push to `main`. There is no build step to go wrong.
 - **Game list:** the `.tile` blocks in `index.html`, numbered 01 to 22.
 - **Copy:** all of it lives in `index.html`; there is no CMS and no data file.
 - **Colour and type:** the custom properties at the top of `assets/css/site.css`.
-- **Résumé:** replace `Norair_Harutyunyan_Resume.pdf`, keeping the filename.
+- **Résumé:** `Norair_Harutyunyan_Resume.pdf` is generated, not hand-made. The
+  generator lives at `D:/_norair_src/pdf/build-resume.mjs` (pdf-lib), with
+  `fonts.mjs` fetching the static Syne and Manrope faces it embeds. Edit the
+  copy in that script and re-run it, or replace the file keeping the filename.
 
 ## Known items for the owner
 
