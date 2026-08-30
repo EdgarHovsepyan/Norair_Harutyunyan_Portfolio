@@ -62,7 +62,7 @@ through `<picture>`, with the PNG kept as the fallback source.
 ## How the page behaves
 
 - **Boot screen.** Held until the fonts resolve, the document loads, and the
-  first poster frame decodes; capped at 2.6s so a slow asset can never trap a
+  first poster frame decodes; capped at 1.5s so a slow asset can never trap a
   visitor. It only exists when JavaScript runs.
 - **Video.** Sources attach one viewport ahead of the clip, so playback starts
   full rather than buffering on screen. Each clip arrives blurred and pulls into
@@ -112,3 +112,10 @@ every push to `main`. There is no build step to go wrong.
   staging host. That card now points at the public game page instead.
 - Award entries in the recognition section are Pascal Gaming studio awards, and
   the section says so. They are not presented as individual awards.
+
+## Reviewing the hero effect
+
+The WebGL haze is skipped on software renderers (SwiftShader, llvmpipe) and on
+machines reporting two cores or fewer, because there it costs main-thread time
+that first paint needs. Append `?gl=force` to the URL to render it anyway, which
+is also how it is checked in a headless browser.

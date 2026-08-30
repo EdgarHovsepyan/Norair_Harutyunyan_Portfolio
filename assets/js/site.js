@@ -47,8 +47,10 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(step).catch(step);
     else step();
 
-    if (document.readyState === 'complete') step();
-    else addEventListener('load', step, { once: true });
+    /* DOMContentLoaded, not load: waiting for every subresource on a slow
+       connection turns the boot screen into the thing being waited for. */
+    if (document.readyState !== 'loading') step();
+    else document.addEventListener('DOMContentLoaded', step, { once: true });
 
     /* the hero poster of the first clip, so the fold is not empty */
     var firstPoster = document.querySelector('.stage__poster');
@@ -59,7 +61,7 @@
     } else step();
 
     /* never hold the page hostage to a slow asset */
-    setTimeout(done, 2600);
+    setTimeout(done, 1500);
   })();
 
   /* ---------- 2. scroll progress ---------- */
@@ -364,7 +366,7 @@
      the context is refused, or the machine is struggling, it is
      dropped and the CSS glow underneath carries the hero.
      ============================================================ */
-  var hero = (function () {
+  function buildHero() {
     var canvas = document.getElementById('hero-gl');
     if (!canvas || reduced.matches) return null;
 
@@ -373,6 +375,16 @@
       premultipliedAlpha: false, powerPreference: 'low-power'
     }) || canvas.getContext('experimental-webgl');
     if (!gl) return null;
+
+    /* No GPU, no haze. Software rasterisers turn every frame into main-thread
+       work, which is exactly what a first paint cannot afford. */
+    var forceGL = location.search.indexOf('gl=force') > -1;   /* review hatch */
+    try {
+      var dbg = gl.getExtension('WEBGL_debug_renderer_info');
+      var who = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || '') : '';
+      if (!forceGL && /swiftshader|llvmpipe|software|basic render/i.test(who)) return null;
+    } catch (e) { /* extension blocked, carry on */ }
+    if (!forceGL && (navigator.hardwareConcurrency || 8) <= 2) return null;
 
     var VERT = [
       'attribute vec2 a;',
@@ -405,7 +417,7 @@
 
       'float fbm(vec2 p){',
       '  float v = 0.0, a = 0.5;',
-      '  for (int i = 0; i < 5; i++){ v += a * noise(p); p *= 2.03; a *= 0.5; }',
+      '  for (int i = 0; i < 4; i++){ v += a * noise(p); p *= 2.03; a *= 0.5; }',
       '  return v;',
       '}',
 
@@ -471,7 +483,7 @@
     var uTime = gl.getUniformLocation(prog, 'u_time');
     var uPtr = gl.getUniformLocation(prog, 'u_ptr');
 
-    var scale = Math.min(devicePixelRatio || 1, 1.25);
+    var scale = Math.min(devicePixelRatio || 1, 0.75);
     var ptr = { x: 0, y: 0, tx: 0, ty: 0 };
     var running = false, enabled = motionOn, visible = true, onScreen = true, raf = 0;
     var t0 = 0, frames = 0, slow = 0, degraded = false;
@@ -486,9 +498,14 @@
       gl.uniform2f(uRes, canvas.width, canvas.height);
     }
 
+    var FRAME_MS = 1000 / 30;   /* a slow drift gains nothing from 60fps */
+
     function frame(now) {
       if (!running) return;
       if (!t0) t0 = now;
+
+      if (now - (frame.painted || 0) < FRAME_MS) { raf = requestAnimationFrame(frame); return; }
+      frame.painted = now;
 
       /* watch the cost: two strikes and the effect steps aside */
       var dt = now - (frame.last || now);
@@ -544,7 +561,25 @@
       setEnabled: function (v) { enabled = v; if (v) start(); else { stop(); canvas.classList.remove('is-live'); } },
       setVisible: function (v) { visible = v; if (v) start(); else stop(); }
     };
-  })();
+  }
+
+  /* Built once the page has settled, never in front of the first paint.
+     requestIdleCallback is throttled in a background tab and can simply never
+     run there, so a timer guarantees the effect still arrives. */
+  var hero = null, heroTried = false;
+  function heroLater() {
+    if (heroTried) return;
+    heroTried = true;
+    hero = buildHero();
+    if (hero) hero.setEnabled(motionOn);
+  }
+  function scheduleHero() {
+    if ('requestIdleCallback' in window) requestIdleCallback(heroLater, { timeout: 1200 });
+    else setTimeout(heroLater, 400);
+  }
+  if (document.readyState === 'complete') setTimeout(scheduleHero, 250);
+  else addEventListener('load', function () { setTimeout(scheduleHero, 250); }, { once: true });
+  setTimeout(heroLater, 2200);
 
   applyMotion();
 })();
