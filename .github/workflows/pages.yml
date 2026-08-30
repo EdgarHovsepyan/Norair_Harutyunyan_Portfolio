@@ -23,27 +23,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Build static site
-        run: |
-          rm -rf _site
-          mkdir _site
-          find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '.github' ! -name '_site' -exec cp -R {} _site/ \;
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('_site/index.html')
-          s = p.read_text()
-          if 'motion.css' not in s:
-              s = s.replace('</head>', '<link rel="stylesheet" href="motion.css" />\n</head>')
-          if 'motion.js' not in s:
-              s = s.replace('</body>', '<script src="motion.js"></script>\n</body>')
-          p.write_text(s)
-          PY
+
+      # The site is plain static files. index.html links its own CSS and JS,
+      # so there is nothing to build and nothing to rewrite at deploy time.
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: .
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
