@@ -406,6 +406,11 @@ section[id],article[id]{scroll-margin-top:calc(var(--head-h) + 1.25rem)}
 .split__text .section__title{margin-top:1rem}
 .split__text p{color:var(--silver);margin-top:1.3rem;max-width:52ch;font-size:1rem}
 .split__media{position:relative}
+/* a 9:16 clip is taller than most windows; cap the height and let the width
+   follow the ratio, so the reel always fits the screen it is on */
+.split__media .stage--portrait{
+  width:auto;max-width:100%;height:min(80vh,38rem);margin-inline:auto;
+}
 
 /* ---------- expertise ---------- */
 .cols{display:grid;grid-template-columns:1fr;border-top:1px solid var(--line)}
@@ -547,6 +552,7 @@ section[id],article[id]{scroll-margin-top:calc(var(--head-h) + 1.25rem)}
   .split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .split__text{padding:clamp(2.5rem,5vw,4.5rem) clamp(1rem,4vw,3.5rem)}
   .split--flip .split__media{order:-1}
+  .split__media .stage--portrait{height:min(76vh,42rem)}
 
   .stat{grid-template-columns:minmax(0,.9fr) minmax(0,1.6fr);gap:clamp(1.5rem,4vw,3rem)}
   .stage__cap{font-size:.62rem;padding:.6rem 1rem}
