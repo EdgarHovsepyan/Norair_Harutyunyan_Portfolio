@@ -313,8 +313,11 @@
   function applyMotion() {
     body.classList.toggle('motion-off', !motionOn);
     if (toggle) {
+      var label = motionOn ? 'Motion on' : 'Motion off';
       toggle.setAttribute('aria-pressed', motionOn ? 'true' : 'false');
-      if (toggleLabel) toggleLabel.textContent = motionOn ? 'Motion on' : 'Motion off';
+      /* the visible text is hidden on small screens, so name the control too */
+      toggle.setAttribute('aria-label', label);
+      if (toggleLabel) toggleLabel.textContent = label;
     }
     stages.forEach(function (stage) {
       var video = stage.querySelector('video');
