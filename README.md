@@ -61,6 +61,10 @@ through `<picture>`, with the PNG kept as the fallback source.
 
 ## How the page behaves
 
+- **Résumé links.** Both résumé buttons open the PDF in a new tab rather than
+  forcing a download, so a reader can look before saving. Inside the PDF, phone,
+  email, LinkedIn, Telegram and the portfolio are link annotations; the portfolio
+  is repeated in the footer of both pages.
 - **Boot screen.** Held until the fonts resolve, the document loads, and the
   first poster frame decodes; capped at 1.5s so a slow asset can never trap a
   visitor. It only exists when JavaScript runs.
