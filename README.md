@@ -6,12 +6,7 @@ Production Lead and Senior 2D Artist, Yerevan.
 No framework, no build step, no runtime dependencies. Open `index.html` and it
 works. GitHub Pages serves the repository root as-is.
 
-**Live:** https://edgarhovsepyan.github.io/Norair_Harutyunyan_Portfolio/
-
-This is the working copy. The destination is
-https://norohtn.github.io/Norair_Harutyunyan_Portfolio/ ; when it lands there,
-switch the five absolute URLs in the `<head>` of `index.html`, plus `robots.txt`
-and `sitemap.xml`, back to that host.
+**Live:** https://norohtn.github.io/Norair_Harutyunyan_Portfolio/
 
 ---
 
