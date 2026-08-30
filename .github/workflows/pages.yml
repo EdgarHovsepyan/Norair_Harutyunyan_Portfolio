@@ -29,8 +29,7 @@ jobs:
         run: |
           rm -rf _site
           mkdir _site
-          cp -R . _site/
-          rm -rf _site/.git _site/.github _site/_site
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '.github' ! -name '_site' -exec cp -R {} _site/ \;
           python - <<'PY'
           from pathlib import Path
           p = Path('_site/index.html')
