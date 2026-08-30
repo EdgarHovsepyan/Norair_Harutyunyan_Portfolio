@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://norohtn.github.io/Norair_Harutyunyan_Portfolio/sitemap.xml
+Sitemap: https://edgarhovsepyan.github.io/Norair_Harutyunyan_Portfolio/sitemap.xml
