@@ -625,27 +625,29 @@ body.motion-off .stage__ctl{opacity:1;transform:none;pointer-events:auto}
 
 /* ============================================================
    STAGE FOCUS PULL
-   Clips arrive soft and settle sharp as they enter the viewport,
-   which also hides the hand-off from poster frame to video.
+   --soft runs 0 when a clip is fully in view and 1 as it leaves.
+   The observer writes it, so a clip softens on the way out exactly
+   as it sharpened on the way in, and the same value covers the
+   hand-off from poster frame to first video frame.
    ============================================================ */
+.js .stage{--soft:1}
 .js .stage__poster,
 .js .stage video{
+  filter:blur(calc(var(--soft) * 9px));
+  transform:scale(calc(1 + var(--soft) * .045));
   transition:opacity .5s var(--ease-out-quart),
-             filter .85s var(--ease-out-expo),
-             transform .85s var(--ease-out-expo);
+             filter .5s var(--ease-out-quart),
+             transform .5s var(--ease-out-quart);
 }
-.js .stage:not(.is-inview) .stage__poster,
-.js .stage:not(.is-inview) video{filter:blur(14px) saturate(.82);transform:scale(1.07)}
-.js .stage.is-inview .stage__poster,
-.js .stage.is-inview video{filter:blur(0) saturate(1);transform:none}
-.stage.is-settled .stage__poster,
-.stage.is-settled video{filter:none}
+/* while a clip is simply being watched there is no filter pass at all */
+.js .stage.is-sharp .stage__poster,
+.js .stage.is-sharp video{filter:none;transform:none}
 
 @media (prefers-reduced-motion:reduce){
   .hero__canvas{display:none}
-  .js .stage:not(.is-inview) .stage__poster,
-  .js .stage:not(.is-inview) video{filter:none;transform:none}
+  .js .stage__poster,
+  .js .stage video{filter:none;transform:none}
 }
 body.motion-off .hero__canvas{opacity:0}
-body.motion-off .stage:not(.is-inview) .stage__poster,
-body.motion-off .stage:not(.is-inview) video{filter:none;transform:none}
+body.motion-off .stage__poster,
+body.motion-off .stage video{filter:none;transform:none}
