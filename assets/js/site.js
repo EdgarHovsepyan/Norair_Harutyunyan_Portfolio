@@ -273,23 +273,24 @@
     }, { rootMargin: '100% 0px' });
     stages.forEach(function (s) { preloader.observe(s); });
 
-    /* focus pull: clear the blur slightly before the clip is centred */
-    var focusPull = new IntersectionObserver(function (entries) {
+    /* Focus pull. A ratio of thresholds is enough to drive this: the
+       callback only runs when a clip crosses one, so there is no scroll
+       handler and no per-frame work. --soft is 0 while the clip is being
+       watched and rises as it leaves the viewport in either direction. */
+    var STEPS = [0, .05, .12, .2, .28, .36, .44, .52, .6, .68, .76, .84, .9, .96, 1];
+    var softener = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         var stage = en.target;
-        stage.classList.toggle('is-inview', en.isIntersecting);
-        if (en.isIntersecting) {
-          /* drop the filter once it has settled, so nothing keeps
-             a blur pass alive on a large surface while scrolling */
-          clearTimeout(stage._settle);
-          stage._settle = setTimeout(function () { stage.classList.add('is-settled'); }, 950);
-        } else {
-          clearTimeout(stage._settle);
-          stage.classList.remove('is-settled');
-        }
+        /* a stage taller than the window can never reach ratio 1, so measure
+           against the most of it that could possibly be on screen */
+        var reachable = Math.min(en.boundingClientRect.height, innerHeight) || 1;
+        var cover = Math.min(1, en.intersectionRect.height / reachable);
+        var soft = cover >= 0.9 ? 0 : Math.min(1, (0.9 - cover) / 0.62);
+        stage.style.setProperty('--soft', soft.toFixed(3));
+        stage.classList.toggle('is-sharp', soft === 0);
       });
-    }, { rootMargin: '-8% 0px -8% 0px', threshold: 0.12 });
-    stages.forEach(function (s) { focusPull.observe(s); });
+    }, { threshold: STEPS });
+    stages.forEach(function (s) { softener.observe(s); });
 
     /* playback */
     var vo = new IntersectionObserver(function (entries) {
@@ -306,7 +307,7 @@
     }, { threshold: 0.2 });
     stages.forEach(function (s) { vo.observe(s); });
   } else {
-    stages.forEach(function (s) { s.classList.add('is-inview', 'is-settled'); });
+    stages.forEach(function (s) { s.classList.add('is-sharp'); });
   }
 
   /* ---------- 9. motion toggle ---------- */

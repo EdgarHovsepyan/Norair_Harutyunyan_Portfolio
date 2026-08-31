@@ -56,18 +56,35 @@ Encoded with `libx264`, `-movflags +faststart`, closed GOP every 60 frames so th
 loop restarts without a stall. The three silent clips carry no audio track at
 all. Regenerate with `D:/_norair_src/encode.sh` if the sources change.
 
-Thumbnails are converted to WebP (3.79 MB of PNG becomes 0.43 MB) and served
-through `<picture>`, with the PNG kept as the fallback source.
+Thumbnails are the ceiling of what exists: Pascal Gaming ships these tiles at
+302x302, and their own asset is literally named `302X302 Avinho R10.png`. There is
+no higher-resolution original to fetch. The grid shows them at about 452 CSS px,
+so the browser was upscaling 302 to 908 device pixels on a retina screen, which
+is why they looked soft.
+
+Each tile now ships twice: the native 302 at WebP q88, and a 604 built with
+Lanczos plus a light unsharp pass at q82, wired through `srcset` with width
+descriptors. The browser picks one, never both: 0.56 MB for the small ladder,
+1.09 MB for the large one. A 604 render is still an upscale, but a baked Lanczos
+upscale with edge recovery is visibly sharper than the browser inventing the same
+pixels at draw time. Going further would be inventing detail the source does not
+have.
 
 ## How the page behaves
 
+- **Résumé links.** Both résumé buttons open the PDF in a new tab rather than
+  forcing a download, so a reader can look before saving. Inside the PDF, phone,
+  email, LinkedIn, Telegram and the portfolio are link annotations; the portfolio
+  is repeated in the footer of both pages.
 - **Boot screen.** Held until the fonts resolve, the document loads, and the
   first poster frame decodes; capped at 1.5s so a slow asset can never trap a
   visitor. It only exists when JavaScript runs.
 - **Video.** Sources attach one viewport ahead of the clip, so playback starts
-  full rather than buffering on screen. Each clip arrives blurred and pulls into
-  focus as it enters view, which also covers the hand-off from poster frame to
-  first video frame. Clips pause off screen and on a hidden tab.
+  full rather than buffering on screen. A `--soft` value written by an observer
+  runs 0 while a clip is being watched and rises as it leaves, so each clip
+  softens on the way out exactly as it sharpened on the way in, which also covers
+  the hand-off from poster frame to first video frame. Clips pause off screen and
+  on a hidden tab.
 - **Motion switch.** The header control stops every clip, the hero canvas and all
   reveals at once, and remembers the choice. It defaults to the operating
   system's reduced-motion setting, and follows changes to it until someone
@@ -76,7 +93,7 @@ through `<picture>`, with the PNG kept as the fallback source.
 - **Hero canvas.** A slow ruby haze in WebGL, purely atmospheric. If the context
   is refused, or frames start costing more than 34ms, it steps aside and the CSS
   glow underneath carries the hero. It never renders under reduced motion.
-- **Gallery.** Every thumbnail's square is reserved in CSS, so lazy loading
+- **Gallery.** Every thumbnail square is reserved in CSS, so lazy loading
   cannot shift the layout. A shimmer holds the slot until the image has decoded.
 
 Without JavaScript the page is complete: all sections visible, all poster frames
